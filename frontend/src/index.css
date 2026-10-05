@@ -1,0 +1,2 @@
+@import "tailwindcss";
+:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#172033;background:#f6f8fb}body{margin:0}.glass{background:rgba(255,255,255,.82);backdrop-filter:blur(12px)}.shadow-soft{box-shadow:0 14px 45px rgba(30,41,59,.08)}
