@@ -17,3 +17,4 @@ google-api-python-client==2.165.0
 alembic==1.15.2
 pytest==8.3.5
 pytest-asyncio==0.25.3
+email-validator>=2.0.0
