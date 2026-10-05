@@ -1,179 +1,545 @@
 # DocFlow AI — AI Document Integration & Processing Platform
 
-DocFlow AI is a production-oriented SaaS-style document pipeline demonstrating backend engineering and data-integration skills: JWT authentication, REST APIs, PDF/DOCX extraction, PostgreSQL, reusable SaaS connectors, structured validation/errors, logging, testing and Gemini-powered document Q&A.
+DocFlow AI is a production-oriented SaaS-style platform for uploading, importing, processing, and querying documents using AI.
+
+The project demonstrates backend engineering and data-integration concepts including **JWT authentication, REST APIs, PDF/DOCX processing, PostgreSQL, OAuth-based SaaS integrations, validation, structured error handling, logging, testing, and AI-powered document Q&A**.
 
 ## Architecture
 
 ```text
 User
-  ↓
+  │
+  ▼
 React + Vite + Tailwind
-  ↓ REST / JSON
-FastAPI API
+  │
+  │ REST / JSON
+  ▼
+FastAPI Backend
+  │
   ├── JWT Authentication
-  ├── Document Service → PDF/DOCX extraction → normalization → chunks
-  ├── Integration Service → Google Drive OAuth → Drive REST API → import
-  ├── AI Service → Gemini
+  │
+  ├── Document Service
+  │     ├── PDF/DOCX Extraction
+  │     ├── Text Normalization
+  │     └── Document Chunking
+  │
+  ├── Integration Service
+  │     └── Google Drive OAuth → Drive API → Import
+  │
+  ├── AI Service
+  │     └── Groq / LLM
+  │
   └── SQLAlchemy
-          ↓
-      PostgreSQL
+        │
+        ▼
+   PostgreSQL
 ```
 
-The requested pipeline is: **External SaaS/API → Authentication → Data Extraction → Validation → Processing → Database → AI → REST API → Frontend**. fileciteturn0file0L63-L67
+### Core Pipeline
+
+```text
+External SaaS/API
+       ↓
+Authentication
+       ↓
+Data Extraction
+       ↓
+Validation
+       ↓
+Document Processing
+       ↓
+PostgreSQL
+       ↓
+AI Processing
+       ↓
+REST API
+       ↓
+React Frontend
+```
+
+---
 
 ## Features
 
-- Multi-user registration/login with bcrypt password hashing and JWT access tokens.
-- User-scoped document access and deletion.
-- PDF/DOCX upload with type/size/empty-file/duplicate validation.
-- Extraction, normalization, SHA-256 duplicate detection, status tracking and chunking.
-- AI Q&A endpoint: `POST /api/documents/{document_id}/ask`.
-- Chat history stored in PostgreSQL.
-- Google Drive OAuth connector with metadata retrieval, file download and import.
-- Reusable `BaseConnector` abstraction for adding other SaaS sources.
-- Consistent JSON errors, centralized exception handling and structured logging.
-- FastAPI OpenAPI docs at `/docs`.
-- Pytest backend tests and Postman collection.
-- Docker Compose for local PostgreSQL + backend + frontend.
+* Multi-user registration and login with **bcrypt password hashing** and **JWT authentication**
+* User-scoped document access and deletion
+* PDF and DOCX document upload
+* File type, size, empty-file, and duplicate validation
+* Text extraction, normalization, hashing, status tracking, and chunking
+* AI-powered document Q&A using **Groq**
+* Context-aware answers generated from document chunks
+* Persistent chat history stored in PostgreSQL
+* Google Drive OAuth integration
+* Google Drive PDF/DOCX import
+* Reusable SaaS connector architecture
+* Consistent JSON error responses
+* Centralized exception handling
+* Structured application logging
+* FastAPI OpenAPI documentation
+* Pytest backend tests
+* Postman API collection
+* Docker Compose support for local development
 
-## Project structure
+---
+
+## Tech Stack
+
+### Frontend
+
+* React
+* Vite
+* Tailwind CSS
+* JavaScript
+* REST API integration
+
+### Backend
+
+* Python
+* FastAPI
+* SQLAlchemy
+* Pydantic
+* JWT
+* bcrypt
+* Pytest
+
+### Database
+
+* PostgreSQL
+
+### AI
+
+* Groq API
+* `openai/gpt-oss-120b`
+
+### Integrations
+
+* Google Drive API
+* Google OAuth 2.0
+
+### Tools
+
+* Git / GitHub
+* Postman
+* Docker
+* Linux/macOS CLI
+
+---
+
+## Project Structure
 
 ```text
 docflow-ai/
+│
 ├── backend/
 │   ├── app/
-│   │   ├── api/              # HTTP controllers/routes
-│   │   ├── connectors/       # SaaS connector abstraction + Google Drive
-│   │   ├── core/             # config, security, dependencies, errors
-│   │   ├── db/               # SQLAlchemy session/init
-│   │   ├── models/           # relational models
-│   │   ├── schemas/           # Pydantic request/response models
-│   │   └── services/          # processing + AI business logic
+│   │   ├── api/              # HTTP routes/controllers
+│   │   ├── connectors/       # SaaS connector abstractions
+│   │   ├── core/             # Configuration, security, dependencies
+│   │   ├── db/               # Database configuration
+│   │   ├── models/           # SQLAlchemy models
+│   │   ├── schemas/          # Pydantic schemas
+│   │   └── services/         # Business logic and AI services
+│   │
 │   ├── tests/
 │   ├── Dockerfile
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── .env.example
+│
 ├── frontend/
+│
 ├── docs/
+│
 ├── docker-compose.yml
 ├── postman_collection.json
 └── README.md
 ```
 
-## Database schema
+---
 
-- `users` → owns documents and integrations.
-- `documents` → metadata, status, extracted text and content hash.
-- `document_chunks` → chunked text for efficient AI context.
-- `integrations` → provider credentials/tokens per user.
-- `chat_history` → document-specific AI conversations.
+## Database Schema
 
-The requested relational relationships are User → Documents, User → Integrations, Document → Chunks, and Document → Chat History. fileciteturn0file0L351-L375
+The application uses PostgreSQL with user-scoped relational data.
 
-## Local setup
+```text
+Users
+  │
+  ├── Documents
+  │      │
+  │      ├── Document Chunks
+  │      │
+  │      └── Chat History
+  │
+  └── Integrations
+```
 
-### Option A — Docker Compose
+### Main Tables
+
+| Table             | Purpose                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| `users`           | Application users                                          |
+| `documents`       | Document metadata, extracted text, status and content hash |
+| `document_chunks` | Chunked document text used for AI context                  |
+| `integrations`    | User-specific OAuth integration data                       |
+| `chat_history`    | Document-specific AI conversations                         |
+
+---
+
+# Local Development
+
+## Prerequisites
+
+Make sure the following are installed:
+
+* Python 3.12+
+* Node.js
+* PostgreSQL
+* Git
+
+---
+
+## Option A — Docker Compose
+
+From the project root:
 
 ```bash
 cp backend/.env.example backend/.env
-# Put GEMINI_API_KEY / Google OAuth values in the root .env if needed.
+```
+
+Configure the required environment variables and then run:
+
+```bash
 docker compose up --build
 ```
 
-Frontend: http://localhost:5173  
-API: http://localhost:8000  
-API docs: http://localhost:8000/docs
+The application will be available at:
 
-### Option B — Native development
+```text
+Frontend:  http://localhost:5173
+API:       http://localhost:8000
+API Docs:  http://localhost:8000/docs
+```
 
-1. Start PostgreSQL and create a database named `docflow`.
-2. Backend:
+---
+
+## Option B — Native Development
+
+### 1. Configure PostgreSQL
+
+Create a PostgreSQL database named:
+
+```text
+docflow
+```
+
+Then configure `DATABASE_URL` in:
+
+```text
+backend/.env
+```
+
+---
+
+### 2. Setup Backend
 
 ```bash
 cd backend
-python -m venv .venv
+
+python3 -m venv .venv
+
 source .venv/bin/activate
+
+python -m pip install --upgrade pip
+
 pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --reload --port 8000
 ```
 
-3. Frontend:
+Create the environment file:
+
+```bash
+cp .env.example .env
+```
+
+Start the backend:
+
+```bash
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+Backend:
+
+```text
+http://localhost:8000
+```
+
+API documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+---
+
+### 3. Setup Frontend
+
+Open another terminal:
 
 ```bash
 cd frontend
+
 npm install
+
 npm run dev
 ```
 
-## Environment variables
+Frontend:
 
-Backend variables are documented in `backend/.env.example`. Important values:
+```text
+http://localhost:5173
+```
 
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `CORS_ORIGINS`
-- `MAX_FILE_SIZE_MB`
-- `GEMINI_API_KEY`
-- `GEMINI_MODEL`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `GOOGLE_REDIRECT_URI`
-- `FRONTEND_URL`
+---
 
-Frontend uses `VITE_API_URL`. Never put Gemini or Google client secrets in frontend variables.
+# Environment Variables
 
-## Google Drive setup
+Backend environment variables are documented in:
 
-Create a Google OAuth web application in Google Cloud, enable the Google Drive API, and register the exact callback URL:
+```text
+backend/.env.example
+```
 
-`http://localhost:8000/api/integrations/google/callback`
+Important variables include:
 
-Set the client ID/secret in the backend environment. The connector uses Drive read-only scope, lists PDF/DOCX files, downloads them, extracts text and persists them through the same document pipeline. This follows the requested connector flow of OAuth → Drive REST API → metadata → download → extraction → PostgreSQL → AI. fileciteturn0file0L202-L241
+```env
+DATABASE_URL=
+JWT_SECRET=
+CORS_ORIGINS=
 
-## Gemini setup
+MAX_FILE_SIZE_MB=
 
-Set `GEMINI_API_KEY`. The browser never calls Gemini. The backend AI service builds a prompt from document chunks and calls Gemini server-side.
+GROQ_API_KEY=
+GROQ_MODEL=openai/gpt-oss-120b
 
-Without a Gemini key, local document upload/search still works and the Q&A endpoint returns a clear configuration message rather than silently failing.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
 
-## Testing
+FRONTEND_URL=
+```
+
+The frontend uses:
+
+```env
+VITE_API_URL=
+```
+
+### Security
+
+Never commit:
+
+```text
+.env
+```
+
+or any API keys, OAuth secrets, JWT secrets, or database credentials.
+
+Provider secrets are used only by the backend and are never exposed to the browser.
+
+---
+
+# AI Document Q&A
+
+DocFlow AI uses the **Groq API** for document-based question answering.
+
+The backend retrieves relevant document chunks and provides them as context to the language model.
+
+Current model:
+
+```text
+openai/gpt-oss-120b
+```
+
+The browser does not call the AI provider directly.
+
+The request flow is:
+
+```text
+User Question
+      ↓
+FastAPI
+      ↓
+Document Ownership Check
+      ↓
+Document Chunks
+      ↓
+Groq API
+      ↓
+AI Answer
+      ↓
+Chat History
+      ↓
+Frontend
+```
+
+If the Groq API key is not configured, the application returns a clear configuration message instead of silently failing.
+
+---
+
+# Google Drive Integration
+
+DocFlow AI supports importing documents directly from Google Drive.
+
+### Flow
+
+```text
+User
+  ↓
+Google OAuth
+  ↓
+Google Drive API
+  ↓
+File Metadata
+  ↓
+PDF/DOCX Download
+  ↓
+Document Extraction
+  ↓
+Validation
+  ↓
+PostgreSQL
+  ↓
+AI Q&A
+```
+
+The integration currently supports PDF and DOCX files.
+
+### Local OAuth Callback
+
+For local development, configure the Google OAuth redirect URI as:
+
+```text
+http://localhost:8000/api/integrations/google/callback
+```
+
+The Google Drive API must be enabled in the associated Google Cloud project.
+
+OAuth credentials should be stored only in the backend environment.
+
+---
+
+# SaaS Connector Architecture
+
+DocFlow AI uses a reusable connector abstraction for external SaaS integrations.
+
+The `BaseConnector` interface defines operations such as:
+
+```text
+authenticate()
+list_files()
+get_file_metadata()
+download_file()
+disconnect()
+```
+
+The Google Drive integration implements this interface through:
+
+```text
+GoogleDriveConnector
+```
+
+This design allows future integrations such as:
+
+```text
+Notion
+Dropbox
+OneDrive
+Google Drive
+```
+
+to be added without changing the core document-processing pipeline.
+
+---
+
+# REST API
+
+## Authentication
+
+```text
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/logout
+GET  /api/users/me
+```
+
+## Documents
+
+```text
+POST   /api/documents/upload
+GET    /api/documents
+GET    /api/documents/{id}
+DELETE /api/documents/{id}
+POST   /api/documents/{id}/ask
+GET    /api/documents/{id}/chat
+```
+
+## Integrations
+
+```text
+GET    /api/integrations
+GET    /api/integrations/google/connect
+GET    /api/integrations/google/callback
+POST   /api/integrations/google/import
+DELETE /api/integrations/google/disconnect
+```
+
+---
+
+# API Documentation
+
+FastAPI automatically provides interactive OpenAPI documentation.
+
+Once the backend is running:
+
+```text
+http://localhost:8000/docs
+```
+
+The API can be tested directly through Swagger UI.
+
+A Postman collection is also included:
+
+```text
+postman_collection.json
+```
+
+---
+
+# Testing
+
+Run the backend tests with:
 
 ```bash
 cd backend
+
+source .venv/bin/activate
+
 pytest
 ```
 
-Tests cover health, registration/login/me and protected document access. The API design also includes validation and connector error paths suitable for extension with integration tests.
+The test suite covers core API functionality including:
 
-## REST endpoints
+* Health checks
+* User registration
+* Login
+* Current-user authentication
+* Protected document access
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/users/me`
-- `POST /api/documents/upload`
-- `GET /api/documents`
-- `GET /api/documents/{id}`
-- `DELETE /api/documents/{id}`
-- `POST /api/documents/{id}/ask`
-- `GET /api/documents/{id}/chat`
-- `GET /api/integrations`
-- `GET /api/integrations/google/connect`
-- `GET /api/integrations/google/callback`
-- `POST /api/integrations/google/import`
-- `DELETE /api/integrations/google/disconnect`
+The architecture also supports extending the test suite with integration tests for document processing and external connectors.
 
-## Deployment
+---
 
-- Frontend: Vercel, with `VITE_API_URL` pointing to the deployed API.
-- Backend: Render/Railway using the included Dockerfile.
-- Database: Neon/Supabase PostgreSQL using `DATABASE_URL`.
-- Set production CORS and Google callback URL to the deployed domains.
-- Set a long random `JWT_SECRET` and never commit `.env` or provider secrets.
+# Error Handling
 
-## Error contract
-
-Application errors use a consistent shape:
+The API follows a consistent JSON error format:
 
 ```json
 {
@@ -185,41 +551,119 @@ Application errors use a consistent shape:
 }
 ```
 
-The project handles validation (422), authentication (401), authorization/not-found (404), conflicts (409), oversized files (413), upstream provider failures (502), and unexpected server errors (500).
+The application handles common API failures including:
 
-## SaaS connector architecture
+| Status | Meaning                   |
+| ------ | ------------------------- |
+| `401`  | Authentication required   |
+| `404`  | Resource not found        |
+| `409`  | Resource conflict         |
+| `413`  | File too large            |
+| `422`  | Validation error          |
+| `502`  | External provider failure |
+| `500`  | Unexpected server error   |
 
-`BaseConnector` defines `authenticate`, `list_files`, `get_file_metadata`, `download_file`, and `disconnect`. `GoogleDriveConnector` implements the contract. A future Notion/Dropbox/OneDrive connector can implement the same interface without changing document-processing business logic. This is the requested reusable connector architecture. fileciteturn0file0L247-L266
+---
 
-## Production hardening roadmap
+# Deployment
 
-- Encrypt OAuth refresh tokens at rest with a managed KMS.
-- Move large-file processing to a background queue (Celery/RQ/Cloud Tasks).
-- Add Redis rate limiting and distributed request IDs.
-- Add object storage (S3/GCS) for originals instead of only storing extracted text.
-- Add semantic embeddings/vector search for larger documents.
-- Add CI with lint/type/test/security checks.
-- Add richer observability and audit logs.
+The project is structured for cloud deployment.
 
-## Resume positioning
+### Frontend
 
-**DocFlow AI — AI Document Integration Platform | React, FastAPI, PostgreSQL, REST APIs, Gemini, OAuth**
+Recommended:
 
-- Built a multi-user document processing platform with JWT authentication, REST APIs, PDF/DOCX extraction, PostgreSQL storage, and AI-powered document Q&A.
-- Developed a reusable SaaS connector architecture for external document ingestion, handling OAuth authentication, API calls, JSON parsing, validation, and automated data processing.
-- Implemented automated testing, structured error handling, logging, and deployment-ready backend services.
-
-These bullets match the intended positioning in the supplied project brief. fileciteturn0file0L593-L604
-
-## macOS setup note
-If `python` is not available on macOS, use `python3` to create the virtual environment:
-
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+```text
+Vercel
 ```
 
-The PostgreSQL driver uses a compatible `psycopg[binary]` range rather than pinning the older 3.2.6 binary wheel, which is unavailable on some newer Python/macOS combinations.
+Configure:
+
+```env
+VITE_API_URL=https://your-backend-domain
+```
+
+### Backend
+
+Compatible deployment options include:
+
+```text
+Render
+Railway
+```
+
+The backend includes a Dockerfile for containerized deployment.
+
+### Database
+
+Recommended PostgreSQL providers:
+
+```text
+Neon
+Supabase
+```
+
+Production deployment requires:
+
+* Production `DATABASE_URL`
+* Strong random `JWT_SECRET`
+* Production CORS configuration
+* Production Google OAuth redirect URI
+* Secure provider credentials
+* HTTPS-enabled frontend and backend
+
+---
+
+# Production Hardening Roadmap
+
+The current project is deployment-ready, while the following improvements can be added for larger-scale production use:
+
+* Encrypt OAuth refresh tokens using a managed KMS
+* Move large-file processing to background workers
+* Add Redis-based rate limiting
+* Add distributed request IDs
+* Store original documents in object storage such as S3/GCS
+* Add embeddings and vector search for large document collections
+* Add CI/CD with linting, type checking, tests and security scanning
+* Add richer observability and audit logging
+
+---
+
+# Resume Positioning
+
+### DocFlow AI — AI Document Integration Platform
+
+**React, FastAPI, PostgreSQL, REST APIs, Groq, OAuth**
+
+* Built a multi-user document processing platform with JWT authentication, REST APIs, PDF/DOCX extraction, PostgreSQL storage, and AI-powered document Q&A.
+* Developed a reusable SaaS connector architecture for Google Drive ingestion, handling OAuth authentication, API integration, metadata retrieval, validation, and automated document processing.
+* Implemented structured error handling, logging, automated testing, document chunking, and deployment-ready backend services.
+
+---
+
+# Project Highlights
+
+```text
+✓ Multi-user authentication
+✓ JWT-based authorization
+✓ PDF/DOCX processing
+✓ PostgreSQL persistence
+✓ Google Drive OAuth integration
+✓ External API integration
+✓ Reusable SaaS connector architecture
+✓ AI-powered document Q&A
+✓ Chat history
+✓ Validation and duplicate detection
+✓ Structured API errors
+✓ Logging and debugging
+✓ Automated backend tests
+✓ Swagger / OpenAPI documentation
+✓ Docker support
+✓ Deployment-ready architecture
+```
+
+---
+
+## License
+
+This project is licensed under the **MIT License**.
